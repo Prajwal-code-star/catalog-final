@@ -1,0 +1,82 @@
+#include <iostream>
+#include <vector>
+#include <numeric>
+#include <cmath>
+#include <utility>
+
+// Function to solve the system of linear equations
+std::vector<double> solveSystem(std::vector<std::vector<double>>& A, std::vector<double>& b) {
+    int n = A.size();
+    std::vector<double> x(n);
+
+    // Gaussian elimination
+    for (int i = 0; i < n; i++) {
+        // Search for maximum in this column
+        int max = i;
+        for (int k = i + 1; k < n; k++) {
+            if (std::abs(A[k][i]) > std::abs(A[max][i])) {
+                max = k;
+            }
+        }
+
+        // Swap maximum row with current row
+        std::vector<double> temp = A[i];
+        A[i] = A[max];
+        A[max] = temp;
+
+        double temp2 = b[i];
+        b[i] = b[max];
+        b[max] = temp2;
+
+        // Make all rows below this one 0 in current column
+        for (int k = i + 1; k < n; k++) {
+            double factor = A[k][i] / A[i][i];
+            for (int j = i; j < n; j++) {
+                A[k][j] -= factor * A[i][j];
+            }
+            b[k] -= factor * b[i];
+        }
+    }
+
+    // Solve equation Ax=b for an upper triangular matrix A
+    for (int i = n - 1; i >= 0; i--) {
+        x[i] = b[i];
+        for (int j = i + 1; j < n; j++) {
+            x[i] -= A[i][j] * x[j];
+        }
+        x[i] /= A[i][i];
+    }
+
+    return x;
+}
+
+int main() {
+    int m; // degree of the polynomial
+    int k; // number of roots
+
+    std::cout << "Enter the degree of the polynomial (m): ";
+    std::cin >> m;
+
+    std::cout << "Enter the number of roots (k): ";
+    std::cin >> k;
+
+    std::vector<std::vector<double>> A(k, std::vector<double>(m + 1));
+    std::vector<double> b(k);
+
+    std::cout << "Enter the roots (x, y) separated by spaces:" << std::endl;
+    for (int i = 0; i < k; i++) {
+        double x, y;
+        std::cin >> x >> y;
+
+        for (int j = 0; j <= m; j++) {
+            A[i][j] = pow(x, j);
+        }
+        b[i] = y;
+    }
+
+    std::vector<double> coeffs = solveSystem(A, b);
+
+    std::cout << "The constant term c is: " << coeffs[m] << std::endl;
+
+    return 0;
+}
